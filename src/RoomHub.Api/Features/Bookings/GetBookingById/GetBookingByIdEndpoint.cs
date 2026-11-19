@@ -17,7 +17,11 @@ public static class GetBookingByIdEndpoint
     {
         app.MapGet("/api/bookings/{id:guid}", (Guid id, BookingService service) =>
         {
-            var booking = service.Get(id);
+            var result = service.Get(id);
+            if (result.IsFailure)
+                return result.Error!.ToProblem();
+
+            var booking = result.Value!;
             return Results.Ok(new Response(
                 booking.Id,
                 booking.RoomId,

@@ -10,7 +10,11 @@ public static class GetRoomByIdEndpoint
     {
         app.MapGet("/api/rooms/{id:guid}", (Guid id, RoomService service) =>
         {
-            var room = service.Get(id);
+            var result = service.Get(id);
+            if (result.IsFailure)
+                return result.Error!.ToProblem();
+
+            var room = result.Value!;
             return Results.Ok(new Response(room.Id, room.Name, room.Capacity));
         }).WithTags("Rooms");
     }

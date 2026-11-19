@@ -8,7 +8,10 @@ public static class CancelBookingEndpoint
     {
         app.MapPost("/api/bookings/{id:guid}/cancel", (Guid id, BookingService service) =>
         {
-            service.Cancel(id);
+            var result = service.Cancel(id);
+            if (result.IsFailure)
+                return result.Error!.ToProblem();
+
             return Results.NoContent();
         }).WithTags("Bookings");
     }

@@ -1,4 +1,4 @@
-using RoomHub.Api.Models;
+using RoomHub.Api.Domain.Bookings;
 
 namespace RoomHub.Api.Repositories;
 

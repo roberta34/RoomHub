@@ -1,34 +1,25 @@
-using RoomHub.Api.Models;
+using RoomHub.Api.Domain.Common;
+using RoomHub.Api.Domain.Rooms;
 using RoomHub.Api.Repositories;
 
 namespace RoomHub.Api.Services;
 
 public class RoomService(RoomRepository rooms)
 {
-    public Room Create(string? name, int capacity)
+    public Result<Room> Create(string? name, int capacity)
     {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new BusinessException("InvalidName", "Room name is required.", 400);
+        var result = Room.Create(name, capacity);
+        if (result.IsSuccess)
+            rooms.Add(result.Value!);
 
-        if (capacity <= 0)
-            throw new BusinessException("InvalidCapacity", "Capacity must be positive.", 400);
-
-        var room = new Room
-        {
-            Id = Guid.NewGuid(),
-            Name = name.Trim(),
-            Capacity = capacity
-        };
-
-        rooms.Add(room);
-        return room;
+        return result;
     }
 
-    public Room Get(Guid id)
+    public Result<Room> Get(Guid id)
     {
         var room = rooms.Get(id);
         if (room is null)
-            throw new BusinessException("RoomNotFound", "The room does not exist.", 404);
+            return new Error("RoomNotFound", "The room does not exist.", ErrorType.NotFound);
 
         return room;
     }

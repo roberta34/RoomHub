@@ -12,7 +12,11 @@ public static class CreateRoomEndpoint
     {
         app.MapPost("/api/rooms", (Request request, RoomService service) =>
         {
-            var room = service.Create(request.Name, request.Capacity);
+            var result = service.Create(request.Name, request.Capacity);
+            if (result.IsFailure)
+                return result.Error!.ToProblem();
+
+            var room = result.Value!;
             return Results.Created(
                 $"/api/rooms/{room.Id}",
                 new Response(room.Id, room.Name, room.Capacity));

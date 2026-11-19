@@ -12,9 +12,12 @@ public static class CreateBookingEndpoint
     {
         app.MapPost("/api/rooms/{roomId:guid}/bookings", (Guid roomId, Request request, BookingService service) =>
         {
-            var booking = service.Create(
+            var result = service.Create(
                 roomId, request.BookedBy, request.StartUtc, request.EndUtc, request.Attendees);
+            if (result.IsFailure)
+                return result.Error!.ToProblem();
 
+            var booking = result.Value!;
             return Results.Created(
                 $"/api/bookings/{booking.Id}",
                 new Response(booking.Id, booking.RoomId, booking.Status.ToString()));

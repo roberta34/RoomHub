@@ -3,7 +3,6 @@ using RoomHub.Api.Features.Bookings.CreateBooking;
 using RoomHub.Api.Features.Bookings.GetBookingById;
 using RoomHub.Api.Features.Rooms.CreateRoom;
 using RoomHub.Api.Features.Rooms.GetRoomById;
-using RoomHub.Api.Middleware;
 using RoomHub.Api.Repositories;
 using RoomHub.Api.Services;
 
@@ -14,10 +13,9 @@ builder.Services.AddSingleton<RoomRepository>();
 builder.Services.AddSingleton<BookingRepository>();
 builder.Services.AddScoped<RoomService>();
 builder.Services.AddScoped<BookingService>();
+builder.Services.AddSingleton(TimeProvider.System);
 
 var app = builder.Build();
-
-app.UseMiddleware<ExceptionMiddleware>();
 
 app.MapGet("/", () => "RoomHub API is running.");
 app.MapCreateRoomEndpoint();
