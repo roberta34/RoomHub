@@ -47,6 +47,7 @@ public class BookingService(
         if (result.IsFailure)
             return result.Error!;
 
-        return result.Value!.Cancel();
+        var nowUtc = timeProvider.GetUtcNow().UtcDateTime;
+        return result.Value!.Cancel(nowUtc);
     }
 }

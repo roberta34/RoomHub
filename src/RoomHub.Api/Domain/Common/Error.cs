@@ -30,6 +30,6 @@ public record Error(string Code, string Message, ErrorType Type)
         };
         problem.Extensions["code"] = Code;
 
-        return Results.Problem(problem);
+        return TypedResults.Problem(problem);
     }
 }

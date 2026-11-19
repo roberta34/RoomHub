@@ -63,8 +63,12 @@ public sealed class Booking
         if (startUtc < nowUtc)
             return new Error("BookingInPast", "The booking cannot start in the past.", ErrorType.Validation);
 
-        if (endUtc - startUtc > TimeSpan.FromHours(4))
-            return new Error("InvalidDuration", "The booking cannot exceed 4 hours.", ErrorType.Validation);
+        var maximumDuration = room.Capacity > 10
+            ? TimeSpan.FromHours(2)
+            : TimeSpan.FromHours(4);
+
+        if (endUtc - startUtc > maximumDuration)
+            return new Error("InvalidDuration", "The booking duration exceeds the room limit.", ErrorType.Validation);
 
         var range = rangeResult.Value!;
         var participantName = bookedBy.Trim();
@@ -94,11 +98,19 @@ public sealed class Booking
         return new Booking(Guid.NewGuid(), room.Id, bookedBy.Trim(), range, attendees);
     }
 
-    public Result<Unit> Cancel()
+    public Result<Unit> Cancel(DateTime nowUtc)
     {
         if (Status == BookingStatus.Cancelled)
         {
             return new Error("BookingAlreadyCancelled", "The booking is already cancelled.", ErrorType.Conflict);
+        }
+
+        if (StartUtc < nowUtc.AddMinutes(60))
+        {
+            return new Error(
+                "CancellationTooLate",
+                "The booking can only be cancelled at least 60 minutes before it starts.",
+                ErrorType.Conflict);
         }
 
         Status = BookingStatus.Cancelled;
