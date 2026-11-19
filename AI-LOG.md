@@ -4,4 +4,5 @@ Write down, in order, what you asked the AI. It is not a punishment: a missing o
 
 | Time (approx.) | What you asked (briefly) | What you kept | What you changed or rejected |
 |---|---|---|---|
-| _(fill in)_ | _(fill in)_ | _(fill in)_ | _(fill in)_ |
+| 5 min | Asked Copilot to reorganize the existing structure regarding models and endpoints into 5 vertical slices | Kept the new structureand verified if dotnet build was successful | Accepted all changes
+
