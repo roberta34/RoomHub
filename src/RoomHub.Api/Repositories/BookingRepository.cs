@@ -31,4 +31,14 @@ public class BookingRepository
             return _bookings.Where(b => b.RoomId == roomId).ToList();
         }
     }
+
+    public List<Booking> ListForParticipant(string bookedBy)
+    {
+        lock (_lock)
+        {
+            return _bookings
+                .Where(b => string.Equals(b.BookedBy, bookedBy, StringComparison.Ordinal))
+                .ToList();
+        }
+    }
 }

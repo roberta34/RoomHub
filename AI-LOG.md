@@ -5,5 +5,6 @@ Write down, in order, what you asked the AI. It is not a punishment: a missing o
 | Time (approx.) | What you asked (briefly) | What you kept | What you changed or rejected |
 |---|---|---|---|
 | 5 min | Asked Copilot to reorganize the existing structure regarding endpoints into 5 vertical slices | Kept the new structure and verified if dotnet build was successful | Accepted all changes
-| 10 min | Asked Copilot to refactor to use Rich Domain + Result pattern as the assignment says | 
+| 6 min | Asked Copilot to refactor to use Rich Domain + Result pattern as the assignment says | 
+
 

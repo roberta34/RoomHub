@@ -53,3 +53,78 @@ Content-Type: application/json
 POST {{baseUrl}}/api/bookings/{{bookingId}}/cancel
 
 ### 8. Add your own requests here for the rules in ASSIGNMENT.md
+
+### Participant daily-limit test: create room 2
+# @name createLimitRoom
+POST {{baseUrl}}/api/rooms
+Content-Type: application/json
+
+{
+  "name": "Study room 2",
+  "capacity": 10
+}
+
+###
+@limitRoomId = {{createLimitRoom.response.body.$.id}}
+
+### Participant limit: first active booking (expected: 201)
+# @name participantFirst
+POST {{baseUrl}}/api/rooms/{{roomId}}/bookings
+Content-Type: application/json
+
+{
+  "bookedBy": "participant-limit",
+  "startUtc": "2031-02-10T10:00:00Z",
+  "endUtc": "2031-02-10T11:00:00Z",
+  "attendees": 2
+}
+
+###
+@participantFirstId = {{participantFirst.response.body.$.id}}
+
+### Participant limit: second active booking in another room (expected: 201)
+POST {{baseUrl}}/api/rooms/{{limitRoomId}}/bookings
+Content-Type: application/json
+
+{
+  "bookedBy": "participant-limit",
+  "startUtc": "2031-02-10T12:00:00Z",
+  "endUtc": "2031-02-10T13:00:00Z",
+  "attendees": 2
+}
+
+### Participant limit: third active booking on the same UTC day (expected: 409)
+POST {{baseUrl}}/api/rooms/{{roomId}}/bookings
+Content-Type: application/json
+
+{
+  "bookedBy": "participant-limit",
+  "startUtc": "2031-02-10T14:00:00Z",
+  "endUtc": "2031-02-10T15:00:00Z",
+  "attendees": 2
+}
+
+### Participant limit: cancel one active booking
+POST {{baseUrl}}/api/bookings/{{participantFirstId}}/cancel
+
+### Participant limit: cancelled booking frees the slot (expected: 201)
+POST {{baseUrl}}/api/rooms/{{roomId}}/bookings
+Content-Type: application/json
+
+{
+  "bookedBy": "participant-limit",
+  "startUtc": "2031-02-10T14:00:00Z",
+  "endUtc": "2031-02-10T15:00:00Z",
+  "attendees": 2
+}
+
+### Participant limit: another UTC day is independent (expected: 201)
+POST {{baseUrl}}/api/rooms/{{roomId}}/bookings
+Content-Type: application/json
+
+{
+  "bookedBy": "participant-limit",
+  "startUtc": "2031-02-11T10:00:00Z",
+  "endUtc": "2031-02-11T11:00:00Z",
+  "attendees": 2
+}

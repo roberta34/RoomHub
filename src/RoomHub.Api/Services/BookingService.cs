@@ -23,6 +23,7 @@ public class BookingService(
             endUtc,
             attendees,
             bookings.ListForRoom(roomId),
+            bookings.ListForParticipant(bookedBy?.Trim() ?? string.Empty),
             nowUtc);
 
         if (result.IsSuccess)
