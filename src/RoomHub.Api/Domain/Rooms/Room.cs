@@ -8,6 +8,10 @@ public sealed class Room
     public string Name { get; private set; } = string.Empty;
     public int Capacity { get; private set; }
 
+    private Room()
+    {
+    }
+
     private Room(Guid id, string name, int capacity)
     {
         Id = id;

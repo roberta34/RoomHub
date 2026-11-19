@@ -1,26 +1,27 @@
 using RoomHub.Api.Domain.Bookings;
 using RoomHub.Api.Domain.Common;
-using RoomHub.Api.Repositories;
+using RoomHub.Api.Domain.Rooms;
 
 namespace RoomHub.Api.Features.Bookings.CreateBooking;
 
 public sealed class CreateBookingHandler(
-    RoomRepository rooms,
-    BookingRepository bookings,
+    IRoomRepository rooms,
+    IBookingRepository bookings,
+    IUnitOfWork unitOfWork,
     TimeProvider timeProvider)
     : ICommandHandler<CreateBookingCommand, Result<Booking>>
 {
-    public Task<Result<Booking>> HandleAsync(
+    public async Task<Result<Booking>> HandleAsync(
         CreateBookingCommand command,
         CancellationToken cancellationToken = default)
     {
-        var room = rooms.Get(command.RoomId);
+        var room = await rooms.GetByIdAsync(command.RoomId, cancellationToken);
         if (room is null)
         {
-            return Task.FromResult<Result<Booking>>(new Error(
+            return new Error(
                 "RoomNotFound",
                 "The room does not exist.",
-                ErrorType.NotFound));
+                ErrorType.NotFound);
         }
 
         var nowUtc = timeProvider.GetUtcNow().UtcDateTime;
@@ -30,13 +31,19 @@ public sealed class CreateBookingHandler(
             command.StartUtc,
             command.EndUtc,
             command.Attendees,
-            bookings.ListForRoom(command.RoomId),
-            bookings.ListForParticipant(command.BookedBy?.Trim() ?? string.Empty),
+            await bookings.GetActiveByRoomAsync(command.RoomId, cancellationToken),
+            await bookings.GetActiveByParticipantAndDateAsync(
+                command.BookedBy?.Trim() ?? string.Empty,
+                command.StartUtc,
+                cancellationToken),
             nowUtc);
 
         if (result.IsSuccess)
+        {
             bookings.Add(result.Value!);
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+        }
 
-        return Task.FromResult(result);
+        return result;
     }
 }

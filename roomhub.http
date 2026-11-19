@@ -128,3 +128,124 @@ Content-Type: application/json
   "endUtc": "2031-02-11T11:00:00Z",
   "attendees": 2
 }
+
+### R1-R4 validation: missing room (expected 404 before validation)
+POST {{baseUrl}}/api/rooms/00000000-0000-0000-0000-000000000002/bookings
+Content-Type: application/json
+
+{
+  "bookedBy": "",
+  "startUtc": "2032-01-01T10:00:00Z",
+  "endUtc": "2032-01-01T09:00:00Z",
+  "attendees": 0
+}
+
+### R10: capacity > 10 exact 2h allowed
+# @name largeRoom
+POST {{baseUrl}}/api/rooms
+Content-Type: application/json
+
+{
+  "name": "Large room",
+  "capacity": 11
+}
+
+###
+@largeRoomId = {{largeRoom.response.body.$.id}}
+
+POST {{baseUrl}}/api/rooms/{{largeRoomId}}/bookings
+Content-Type: application/json
+
+{
+  "bookedBy": "duration-limit",
+  "startUtc": "2032-03-10T10:00:00Z",
+  "endUtc": "2032-03-10T12:00:00Z",
+  "attendees": 11
+}
+
+### R10: capacity > 10 exceeding 2h (expected 400)
+POST {{baseUrl}}/api/rooms/{{largeRoomId}}/bookings
+Content-Type: application/json
+
+{
+  "bookedBy": "duration-limit",
+  "startUtc": "2032-03-10T13:00:00Z",
+  "endUtc": "2032-03-10T15:01:00Z",
+  "attendees": 11
+}
+
+### R10: capacity <= 10 exact 4h allowed
+POST {{baseUrl}}/api/rooms/{{roomId}}/bookings
+Content-Type: application/json
+
+{
+  "bookedBy": "small-room-limit",
+  "startUtc": "2032-04-10T10:00:00Z",
+  "endUtc": "2032-04-10T14:00:00Z",
+  "attendees": 10
+}
+
+### R10: capacity <= 10 exceeding 4h (expected 400)
+POST {{baseUrl}}/api/rooms/{{roomId}}/bookings
+Content-Type: application/json
+
+{
+  "bookedBy": "small-room-limit",
+  "startUtc": "2032-04-11T10:00:00Z",
+  "endUtc": "2032-04-11T14:01:00Z",
+  "attendees": 10
+}
+
+### R7: touching intervals allowed
+# @name touchingFirst
+POST {{baseUrl}}/api/rooms/{{roomId}}/bookings
+Content-Type: application/json
+
+{
+  "bookedBy": "touching-a",
+  "startUtc": "2032-05-10T10:00:00Z",
+  "endUtc": "2032-05-10T11:00:00Z",
+  "attendees": 2
+}
+
+POST {{baseUrl}}/api/rooms/{{roomId}}/bookings
+Content-Type: application/json
+
+{
+  "bookedBy": "touching-b",
+  "startUtc": "2032-05-10T11:00:00Z",
+  "endUtc": "2032-05-10T12:00:00Z",
+  "attendees": 2
+}
+
+### R9: first and second active across rooms
+POST {{baseUrl}}/api/rooms/{{roomId}}/bookings
+Content-Type: application/json
+
+{
+  "bookedBy": "r9-participant",
+  "startUtc": "2032-06-10T10:00:00Z",
+  "endUtc": "2032-06-10T11:00:00Z",
+  "attendees": 2
+}
+
+POST {{baseUrl}}/api/rooms/{{largeRoomId}}/bookings
+Content-Type: application/json
+
+{
+  "bookedBy": "r9-participant",
+  "startUtc": "2032-06-10T12:00:00Z",
+  "endUtc": "2032-06-10T13:00:00Z",
+  "attendees": 2
+}
+
+### R9: third active booking on same UTC day (expected 409)
+POST {{baseUrl}}/api/rooms/{{roomId}}/bookings
+Content-Type: application/json
+
+{
+  "bookedBy": "r9-participant",
+  "startUtc": "2032-06-10T14:00:00Z",
+  "endUtc": "2032-06-10T15:00:00Z",
+  "attendees": 2
+}

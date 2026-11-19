@@ -1,4 +1,6 @@
-using RoomHub.Api.Services;
+using Microsoft.EntityFrameworkCore;
+using RoomHub.Api.Domain.Common;
+using RoomHub.Api.Infrastructure.Persistence;
 
 namespace RoomHub.Api.Features.Rooms.GetRoomById;
 
@@ -8,14 +10,20 @@ public static class GetRoomByIdEndpoint
 
     public static void MapGetRoomByIdEndpoint(this IEndpointRouteBuilder app)
     {
-        app.MapGet("/api/rooms/{id:guid}", (Guid id, RoomService service) =>
+        app.MapGet("/api/rooms/{id:guid}", async (
+            Guid id,
+            RoomHubDbContext db,
+            CancellationToken cancellationToken) =>
         {
-            var result = service.Get(id);
-            if (result.IsFailure)
-                return result.Error!.ToProblem();
+            var room = await db.Rooms
+                .AsNoTracking()
+                .Where(value => value.Id == id)
+                .Select(value => new Response(value.Id, value.Name, value.Capacity))
+                .FirstOrDefaultAsync(cancellationToken);
 
-            var room = result.Value!;
-            return Results.Ok(new Response(room.Id, room.Name, room.Capacity));
+            return room is null
+                ? new Error("RoomNotFound", "The room does not exist.", ErrorType.NotFound).ToProblem()
+                : TypedResults.Ok(room);
         }).WithTags("Rooms");
     }
 }

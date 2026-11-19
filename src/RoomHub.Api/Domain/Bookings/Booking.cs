@@ -20,6 +20,10 @@ public sealed class Booking
     public int Attendees { get; private set; }
     public BookingStatus Status { get; private set; }
 
+    private Booking()
+    {
+    }
+
     private Booking(
         Guid id,
         Guid roomId,

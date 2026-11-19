@@ -5,6 +5,10 @@ public sealed record DateRange
     public DateTime StartUtc { get; private init; }
     public DateTime EndUtc { get; private init; }
 
+    private DateRange()
+    {
+    }
+
     private DateRange(DateTime startUtc, DateTime endUtc)
     {
         StartUtc = startUtc;
